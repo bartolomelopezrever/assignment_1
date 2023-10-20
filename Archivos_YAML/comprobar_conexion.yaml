@@ -1,0 +1,7 @@
+---
+- name: Comprobar que la conexión es correcta
+  hosts: all
+
+  tasks:
+  - name: Ping
+    ping:

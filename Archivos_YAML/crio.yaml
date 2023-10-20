@@ -1,0 +1,41 @@
+---
+- name: Instalar cri-o en Ubuntu 22.04
+  hosts: all
+  become: yes
+  vars:
+    OS: xUbuntu_22.04
+    CRIO_VERSION: 1.26
+  tasks:
+    - name: Asegurarse de que el archivo malformado no exista
+      file:
+        path: "/etc/apt/sources.list.d/download_opensuse_org_repositories_devel_kubic_libcontainers_stable_xUbuntu_lsb_release.list"
+        state: absent
+
+    - name: Añadir repositorio de cri-o
+      shell: |
+        echo "deb https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/{{ OS }}/ /" | tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable.list
+
+    - name: Añadir repositorio de cri-o con versión específica
+      shell: |
+        echo "deb http://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ CRIO_VERSION }}/{{ OS }}/ /" | tee /etc/apt/sources.list.d/devel:kubic:libcontainers:stable:cri-o:{{ CRIO_VERSION }}.list
+
+    - name: Añadir llave del repositorio cri-o con versión específica
+      apt_key:
+        url: "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable:/cri-o:/{{ CRIO_VERSION }}/{{ OS }}/Release.key"
+        state: present
+
+    - name: Añadir llave del repositorio cri-o
+      apt_key:
+        url: "https://download.opensuse.org/repositories/devel:/kubic:/libcontainers:/stable/{{ OS }}/Release.key"
+        state: present
+
+    - name: Actualizar repositorios
+      apt:
+        update_cache: yes
+
+    - name: Instalar cri-o y cri-o-runc
+      apt:
+        name:
+          - cri-o
+          - cri-o-runc
+        state: present

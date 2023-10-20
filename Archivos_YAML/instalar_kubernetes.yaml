@@ -1,0 +1,31 @@
+---
+- name: Instalar Kubernetes 1.28.2
+  hosts: all
+  become: yes
+  tasks:
+    - name: Instalar paquetes necesarios
+      apt:
+        name: ['apt-transport-https', 'curl']
+        state: present
+      become: yes
+
+    - name: Agregar clave GPG de Kubernetes
+      apt_key:
+        url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+        state: present
+      become: yes
+
+    - name: Agregar repositorio de Kubernetes
+      apt_repository:
+        repo: deb https://apt.kubernetes.io/ kubernetes-xenial main
+        state: present
+      become: yes
+
+    - name: Instalar componentes de Kubernetes
+      apt:
+        name: 
+          - 'kubelet=1.28.2-00'
+          - 'kubeadm=1.28.2-00'
+        state: present
+        update_cache: yes
+      become: yes

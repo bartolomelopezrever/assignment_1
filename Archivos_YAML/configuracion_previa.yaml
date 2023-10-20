@@ -1,0 +1,36 @@
+---
+- name: Configurar el sistema para Kubernetes
+  hosts: all
+  become: yes
+  tasks:
+    - name: Cargar el módulo br_netfilter
+      modprobe:
+        name: br_netfilter
+        state: present
+      become: yes
+
+    - name: Establecer bridge-nf-call-iptables a 1
+      sysctl:
+        name: net.bridge.bridge-nf-call-iptables
+        value: '1'
+        state: present
+        reload: yes
+      become: yes
+
+    - name: Habilitar el enrutamiento IP
+      sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+        state: present
+        reload: yes
+      become: yes
+
+    - name: Hacer permanentes las configuraciones
+      lineinfile:
+        path: /etc/sysctl.conf
+        line: "{{ item }}"
+        state: present
+      loop:
+        - "net.bridge.bridge-nf-call-iptables=1"
+        - "net.ipv4.ip_forward=1"
+      become: yes

@@ -1,0 +1,543 @@
+bart@bart-ansible:~/ejercicio_kubernetes$ ansible-playbook -i inventory.ini comprobar_conexion.yaml 
+
+PLAY [Comprobar que la conexión es correcta] ***********************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [nodo_maestro]
+ok: [nodo_trabajador]
+
+TASK [Ping] ********************************************************************
+ok: [nodo_maestro]
+ok: [nodo_trabajador]
+
+PLAY RECAP *********************************************************************
+nodo_maestro               : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+nodo_trabajador            : ok=2    changed=0    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+bart@bart-ansible:~/ejercicio_kubernetes$ ansible-playbook -i inventory.ini instalar_kubernetes_2.yaml -K
+BECOME password: 
+
+PLAY [Instalar Kubernetes 1.28.2] **********************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [nodo_trabajador]
+ok: [nodo_maestro]
+
+TASK [Instalar paquetes necesarios] ********************************************
+changed: [nodo_trabajador]
+changed: [nodo_maestro]
+
+TASK [Agregar clave GPG de Kubernetes] *****************************************
+changed: [nodo_trabajador]
+changed: [nodo_maestro]
+
+TASK [Agregar repositorio de Kubernetes] ***************************************
+changed: [nodo_trabajador]
+changed: [nodo_maestro]
+
+TASK [Instalar componentes de Kubernetes] **************************************
+changed: [nodo_trabajador]
+changed: [nodo_maestro]
+
+PLAY RECAP *********************************************************************
+nodo_maestro               : ok=5    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+nodo_trabajador            : ok=5    changed=4    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+bart@bart-ansible:~/ejercicio_kubernetes$ ansible-playbook -i inventory.ini crio.yaml -K
+BECOME password: 
+
+PLAY [Instalar cri-o en Ubuntu 22.04] ******************************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [nodo_trabajador]
+ok: [nodo_maestro]
+
+TASK [Asegurarse de que el archivo malformado no exista] ***********************
+ok: [nodo_maestro]
+ok: [nodo_trabajador]
+
+TASK [Añadir repositorio de cri-o] *********************************************
+changed: [nodo_maestro]
+changed: [nodo_trabajador]
+
+TASK [Añadir repositorio de cri-o con versión específica] **********************
+changed: [nodo_maestro]
+changed: [nodo_trabajador]
+
+TASK [Añadir llave del repositorio cri-o con versión específica] ***************
+changed: [nodo_trabajador]
+changed: [nodo_maestro]
+
+TASK [Añadir llave del repositorio cri-o] **************************************
+ok: [nodo_trabajador]
+ok: [nodo_maestro]
+
+TASK [Actualizar repositorios] *************************************************
+changed: [nodo_trabajador]
+changed: [nodo_maestro]
+
+TASK [Instalar cri-o y cri-o-runc] *********************************************
+changed: [nodo_maestro]
+changed: [nodo_trabajador]
+
+PLAY RECAP *********************************************************************
+nodo_maestro               : ok=8    changed=5    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+nodo_trabajador            : ok=8    changed=5    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+bart@bart-ansible:~/ejercicio_kubernetes$ sudo bart@192.168.1.107
+sudo: bart@192.168.1.107: command not found
+bart@bart-ansible:~/ejercicio_kubernetes$ ssh bart@192.168.1.107
+Welcome to Ubuntu 22.04 LTS (GNU/Linux 5.15.0-27-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+565 updates can be applied immediately.
+336 of these updates are standard security updates.
+To see these additional updates run: apt list --upgradable
+
+Last login: Fri Oct 20 09:36:08 2023 from 192.168.1.100
+bart@bart-host1:~$ sudo kubeadm init --pod-network-cidr=192.168.0.0/16
+[sudo] password for bart: 
+[init] Using Kubernetes version: v1.28.2
+[preflight] Running pre-flight checks
+error execution phase preflight: [preflight] Some fatal errors occurred:
+	[ERROR CRI]: container runtime is not running: output: E1020 09:38:40.031733   36075 remote_runtime.go:616] "Status from runtime service failed" err="rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing dial unix /var/run/containerd/containerd.sock: connect: no such file or directory\""
+time="2023-10-20T09:38:40+02:00" level=fatal msg="getting status of runtime: rpc error: code = Unavailable desc = connection error: desc = \"transport: Error while dialing dial unix /var/run/containerd/containerd.sock: connect: no such file or directory\""
+, error: exit status 1
+	[ERROR FileContent--proc-sys-net-bridge-bridge-nf-call-iptables]: /proc/sys/net/bridge/bridge-nf-call-iptables does not exist
+	[ERROR FileContent--proc-sys-net-ipv4-ip_forward]: /proc/sys/net/ipv4/ip_forward contents are not set to 1
+[preflight] If you know what you are doing, you can make a check non-fatal with `--ignore-preflight-errors=...`
+To see the stack trace of this error execute with --v=5 or higher
+bart@bart-host1:~$ sudo systemctl status crio
+○ crio.service - Container Runtime Interface for OCI (CRI-O)
+     Loaded: loaded (/lib/systemd/system/crio.service; disabled; vendor preset:>
+     Active: inactive (dead)
+       Docs: https://github.com/cri-o/cri-o
+
+bart@bart-host1:~$ sudo systemctl start crio
+bart@bart-host1:~$ sudo systemctl enable crio
+Created symlink /etc/systemd/system/cri-o.service → /lib/systemd/system/crio.service.
+Created symlink /etc/systemd/system/multi-user.target.wants/crio.service → /lib/systemd/system/crio.service.
+bart@bart-host1:~$ sudo kubeadm init --pod-network-cidr=192.168.0.0/16
+[init] Using Kubernetes version: v1.28.2
+[preflight] Running pre-flight checks
+error execution phase preflight: [preflight] Some fatal errors occurred:
+	[ERROR FileContent--proc-sys-net-bridge-bridge-nf-call-iptables]: /proc/sys/net/bridge/bridge-nf-call-iptables does not exist
+	[ERROR FileContent--proc-sys-net-ipv4-ip_forward]: /proc/sys/net/ipv4/ip_forward contents are not set to 1
+[preflight] If you know what you are doing, you can make a check non-fatal with `--ignore-preflight-errors=...`
+To see the stack trace of this error execute with --v=5 or higher
+bart@bart-host1:~$ exit
+logout
+Connection to 192.168.1.107 closed.
+bart@bart-ansible:~/ejercicio_kubernetes$ ansible-playbook -i inventory.ini configuracion_previa.yaml -K
+BECOME password: 
+[WARNING]: Collection ansible.posix does not support Ansible version 2.15.5
+
+PLAY [Configurar el sistema para Kubernetes] ***********************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [nodo_trabajador]
+^C [ERROR]: User interrupted execution
+bart@bart-ansible:~/ejercicio_kubernetes$ ssh bart@192.168.1.108
+Welcome to Ubuntu 22.04 LTS (GNU/Linux 5.15.0-27-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+565 updates can be applied immediately.
+336 of these updates are standard security updates.
+To see these additional updates run: apt list --upgradable
+
+Last login: Fri Oct 20 09:43:41 2023 from 192.168.1.100
+bart@bart-host2:~$ sudo systemctl start crio
+[sudo] password for bart: 
+bart@bart-host2:~$ sudo systemctl enable crio
+Created symlink /etc/systemd/system/cri-o.service → /lib/systemd/system/crio.service.
+Created symlink /etc/systemd/system/multi-user.target.wants/crio.service → /lib/systemd/system/crio.service.
+bart@bart-host2:~$ exit
+logout
+Connection to 192.168.1.108 closed.
+bart@bart-ansible:~/ejercicio_kubernetes$ ansible-playbook -i inventory.ini configuracion_previa.yaml -K
+BECOME password: 
+[WARNING]: Collection ansible.posix does not support Ansible version 2.15.5
+
+PLAY [Configurar el sistema para Kubernetes] ***********************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [nodo_trabajador]
+^C [ERROR]: User interrupted execution
+bart@bart-ansible:~/ejercicio_kubernetes$ ansible-playbook -i inventory.ini configuracion_previa.yaml -K
+BECOME password: 
+[WARNING]: Collection ansible.posix does not support Ansible version 2.15.5
+
+PLAY [Configurar el sistema para Kubernetes] ***********************************
+
+TASK [Gathering Facts] *********************************************************
+ok: [nodo_trabajador]
+ok: [nodo_maestro]
+
+TASK [Cargar el módulo br_netfilter] *******************************************
+changed: [nodo_maestro]
+changed: [nodo_trabajador]
+
+TASK [Establecer bridge-nf-call-iptables a 1] **********************************
+changed: [nodo_maestro]
+changed: [nodo_trabajador]
+
+TASK [Habilitar el enrutamiento IP] ********************************************
+changed: [nodo_maestro]
+changed: [nodo_trabajador]
+
+TASK [Hacer permanentes las configuraciones] ***********************************
+ok: [nodo_maestro] => (item=net.bridge.bridge-nf-call-iptables=1)
+ok: [nodo_trabajador] => (item=net.bridge.bridge-nf-call-iptables=1)
+ok: [nodo_maestro] => (item=net.ipv4.ip_forward=1)
+ok: [nodo_trabajador] => (item=net.ipv4.ip_forward=1)
+
+PLAY RECAP *********************************************************************
+nodo_maestro               : ok=5    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+nodo_trabajador            : ok=5    changed=3    unreachable=0    failed=0    skipped=0    rescued=0    ignored=0   
+
+bart@bart-ansible:~/ejercicio_kubernetes$ ssh bart@192.168.1.107
+Welcome to Ubuntu 22.04 LTS (GNU/Linux 5.15.0-27-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+565 updates can be applied immediately.
+336 of these updates are standard security updates.
+To see these additional updates run: apt list --upgradable
+
+Last login: Fri Oct 20 09:47:31 2023 from 192.168.1.100
+bart@bart-host1:~$ sudo kubeadm init --pod-network-cidr=192.168.0.0/16
+[sudo] password for bart: 
+[init] Using Kubernetes version: v1.28.2
+[preflight] Running pre-flight checks
+[preflight] Pulling images required for setting up a Kubernetes cluster
+[preflight] This might take a minute or two, depending on the speed of your internet connection
+[preflight] You can also perform this action in beforehand using 'kubeadm config images pull'
+[certs] Using certificateDir folder "/etc/kubernetes/pki"
+[certs] Generating "ca" certificate and key
+[certs] Generating "apiserver" certificate and key
+[certs] apiserver serving cert is signed for DNS names [bart-host1 kubernetes kubernetes.default kubernetes.default.svc kubernetes.default.svc.cluster.local] and IPs [10.96.0.1 192.168.1.107]
+[certs] Generating "apiserver-kubelet-client" certificate and key
+[certs] Generating "front-proxy-ca" certificate and key
+[certs] Generating "front-proxy-client" certificate and key
+[certs] Generating "etcd/ca" certificate and key
+[certs] Generating "etcd/server" certificate and key
+[certs] etcd/server serving cert is signed for DNS names [bart-host1 localhost] and IPs [192.168.1.107 127.0.0.1 ::1]
+[certs] Generating "etcd/peer" certificate and key
+[certs] etcd/peer serving cert is signed for DNS names [bart-host1 localhost] and IPs [192.168.1.107 127.0.0.1 ::1]
+[certs] Generating "etcd/healthcheck-client" certificate and key
+[certs] Generating "apiserver-etcd-client" certificate and key
+[certs] Generating "sa" key and public key
+[kubeconfig] Using kubeconfig folder "/etc/kubernetes"
+[kubeconfig] Writing "admin.conf" kubeconfig file
+[kubeconfig] Writing "kubelet.conf" kubeconfig file
+[kubeconfig] Writing "controller-manager.conf" kubeconfig file
+[kubeconfig] Writing "scheduler.conf" kubeconfig file
+[etcd] Creating static Pod manifest for local etcd in "/etc/kubernetes/manifests"
+[control-plane] Using manifest folder "/etc/kubernetes/manifests"
+[control-plane] Creating static Pod manifest for "kube-apiserver"
+[control-plane] Creating static Pod manifest for "kube-controller-manager"
+[control-plane] Creating static Pod manifest for "kube-scheduler"
+[kubelet-start] Writing kubelet environment file with flags to file "/var/lib/kubelet/kubeadm-flags.env"
+[kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/config.yaml"
+[kubelet-start] Starting the kubelet
+[wait-control-plane] Waiting for the kubelet to boot up the control plane as static Pods from directory "/etc/kubernetes/manifests". This can take up to 4m0s
+[apiclient] All control plane components are healthy after 16.503268 seconds
+[upload-config] Storing the configuration used in ConfigMap "kubeadm-config" in the "kube-system" Namespace
+[kubelet] Creating a ConfigMap "kubelet-config" in namespace kube-system with the configuration for the kubelets in the cluster
+[upload-certs] Skipping phase. Please see --upload-certs
+[mark-control-plane] Marking the node bart-host1 as control-plane by adding the labels: [node-role.kubernetes.io/control-plane node.kubernetes.io/exclude-from-external-load-balancers]
+[mark-control-plane] Marking the node bart-host1 as control-plane by adding the taints [node-role.kubernetes.io/control-plane:NoSchedule]
+[bootstrap-token] Using token: bz0amv.mitkn9j2py42g8wd
+[bootstrap-token] Configuring bootstrap tokens, cluster-info ConfigMap, RBAC Roles
+[bootstrap-token] Configured RBAC rules to allow Node Bootstrap tokens to get nodes
+[bootstrap-token] Configured RBAC rules to allow Node Bootstrap tokens to post CSRs in order for nodes to get long term certificate credentials
+[bootstrap-token] Configured RBAC rules to allow the csrapprover controller automatically approve CSRs from a Node Bootstrap Token
+[bootstrap-token] Configured RBAC rules to allow certificate rotation for all node client certificates in the cluster
+[bootstrap-token] Creating the "cluster-info" ConfigMap in the "kube-public" namespace
+[kubelet-finalize] Updating "/etc/kubernetes/kubelet.conf" to point to a rotatable kubelet client certificate and key
+[addons] Applied essential addon: CoreDNS
+[addons] Applied essential addon: kube-proxy
+
+Your Kubernetes control-plane has initialized successfully!
+
+To start using your cluster, you need to run the following as a regular user:
+
+  mkdir -p $HOME/.kube
+  sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+  sudo chown $(id -u):$(id -g) $HOME/.kube/config
+
+Alternatively, if you are the root user, you can run:
+
+  export KUBECONFIG=/etc/kubernetes/admin.conf
+
+You should now deploy a pod network to the cluster.
+Run "kubectl apply -f [podnetwork].yaml" with one of the options listed at:
+  https://kubernetes.io/docs/concepts/cluster-administration/addons/
+
+Then you can join any number of worker nodes by running the following on each as root:
+
+kubeadm join 192.168.1.107:6443 --token bz0amv.mitkn9j2py42g8wd \
+	--discovery-token-ca-cert-hash sha256:290d68000604e0173e8b9e1c2533175041d3b9427a69723d1761dd3e3ee91977 
+bart@bart-host1:~$ exit
+logout
+Connection to 192.168.1.107 closed.
+bart@bart-ansible:~/ejercicio_kubernetes$ ^C
+bart@bart-ansible:~/ejercicio_kubernetes$ cd
+bart@bart-ansible:~$ ls
+actualizar.yml        hello_world.yaml  Plantillas     text.txt
+Descargas             Imágenes          practicas      tu_playbook.yml
+Documentos            inventory.ini     Público        Vídeos
+ejercicio_kubernetes  Música            shared-drives
+Escritorio            otros             snap
+bart@bart-ansible:~$ ls -a
+.                     hello_world.yaml  snap
+..                    Imágenes          .ssh
+actualizar.yml        inventory.ini     .sudo_as_admin_successful
+.ansible              .kube             .sudoers.swp
+.bash_history         .lesshst          text.txt
+.bash_logout          .local            .thunderbird
+.bashrc               .mozilla          tu_playbook.yml
+.cache                Música            Vídeos
+.config               otros             .vscode
+Descargas             .pki              .Xauthority
+Documentos            Plantillas        .xorgxrdp.10.log
+.dotnet               practicas         .xorgxrdp.10.log.old
+ejercicio_kubernetes  .profile          .xsession-errors
+Escritorio            Público
+.gnupg                shared-drives
+bart@bart-ansible:~$ cd .kube
+bart@bart-ansible:~/.kube$ ls
+config
+bart@bart-ansible:~/.kube$ sudo rm config
+bart@bart-ansible:~/.kube$ ls
+bart@bart-ansible:~/.kube$ cd
+bart@bart-ansible:~$ sudo scp bart@192.168.1.107:/etc/kubernetes/admin.conf $HOME/.kube/config
+The authenticity of host '192.168.1.107 (192.168.1.107)' can't be established.
+ED25519 key fingerprint is SHA256:BxvIbcRu1f9pW/Zrju12xvGNUwipdb+ZzTyuNfktpEE.
+This key is not known by any other names
+Are you sure you want to continue connecting (yes/no/[fingerprint])? yes
+Warning: Permanently added '192.168.1.107' (ED25519) to the list of known hosts.
+bart@192.168.1.107's password: 
+scp: /etc/kubernetes/admin.conf: Permission denied
+bart@bart-ansible:~$ ssh bart@192.168.1.107
+Welcome to Ubuntu 22.04 LTS (GNU/Linux 5.15.0-27-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+565 updates can be applied immediately.
+336 of these updates are standard security updates.
+To see these additional updates run: apt list --upgradable
+
+Last login: Fri Oct 20 09:47:14 2023 from 192.168.1.100
+bart@bart-host1:~$ sudo nano /etc/kubernetes/admin.conf
+[sudo] password for bart: 
+bart@bart-host1:~$ exit
+logout
+Connection to 192.168.1.107 closed.
+bart@bart-ansible:~$ cd .kube
+bart@bart-ansible:~/.kube$ sudo nano config
+bart@bart-ansible:~/.kube$ sudo nano config
+bart@bart-ansible:~/.kube$ ^C
+bart@bart-ansible:~/.kube$ cd
+bart@bart-ansible:~$ kubectl apply -f https://docd.projectcalico.org/manifests/calico.yaml
+error: error loading config file "/home/bart/.kube/config": illegal base64 data at input byte 47
+bart@bart-ansible:~$ cd .kube
+bart@bart-ansible:~/.kube$ ls
+config
+bart@bart-ansible:~/.kube$ sudo nano config
+bart@bart-ansible:~/.kube$ ssh bart@192.168.1.107
+Welcome to Ubuntu 22.04 LTS (GNU/Linux 5.15.0-27-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+565 updates can be applied immediately.
+336 of these updates are standard security updates.
+To see these additional updates run: apt list --upgradable
+
+Last login: Fri Oct 20 09:52:32 2023 from 192.168.1.100
+bart@bart-host1:~$ sudo nano /etc/kubernetes/admin.conf
+[sudo] password for bart: 
+bart@bart-host1:~$ exit
+logout
+Connection to 192.168.1.107 closed.
+bart@bart-ansible:~/.kube$ sudo nano config
+[sudo] password for bart: 
+bart@bart-ansible:~/.kube$ sudo rm config
+bart@bart-ansible:~/.kube$ ssh bart@192.168.1.107 "cat /etc/kubernetes/admin.conf" > $HOME/.kube/config
+cat: /etc/kubernetes/admin.conf: Permission denied
+bart@bart-ansible:~/.kube$ sudo ssh bart@192.168.1.107 "cat /etc/kubernetes/admin.conf" > $HOME/.kube/config
+bart@192.168.1.107's password: 
+cat: /etc/kubernetes/admin.conf: Permission denied
+bart@bart-ansible:~/.kube$ ssh bart@192.168.1.107 "sudo cat /etc/kubernetes/admin.conf" > $HOME/.kube/config
+sudo: a terminal is required to read the password; either use the -S option to read from standard input or configure an askpass helper
+sudo: a password is required
+bart@bart-ansible:~/.kube$ cat config
+bart@bart-ansible:~/.kube$ ^C
+bart@bart-ansible:~/.kube$ cd
+bart@bart-ansible:~$ cat $HOME/.kube/config
+bart@bart-ansible:~$ cd .kube
+bart@bart-ansible:~/.kube$ ls
+config
+bart@bart-ansible:~/.kube$ sudo nano condig
+bart@bart-ansible:~/.kube$ sudo nano config
+bart@bart-ansible:~/.kube$ ssh bart@192.168.1.107
+Welcome to Ubuntu 22.04 LTS (GNU/Linux 5.15.0-27-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+565 updates can be applied immediately.
+336 of these updates are standard security updates.
+To see these additional updates run: apt list --upgradable
+
+Last login: Fri Oct 20 09:58:57 2023 from 192.168.1.100
+bart@bart-host1:~$ sudo nano /etc/kubernetes/admin.conf
+[sudo] password for bart: 
+bart@bart-host1:~$ sudo cp /etc/kubernetes/admin.conf ~/admin.conf
+bart@bart-host1:~$ sudo chown bart:bart ~/admin.conf
+bart@bart-host1:~$ exit
+logout
+Connection to 192.168.1.107 closed.
+bart@bart-ansible:~/.kube$ scp bart@192.168.1.107:~/admin.conf $HOME/.kube/config
+admin.conf                                    100% 5649    11.9MB/s   00:00    
+bart@bart-ansible:~/.kube$ cat $HOME/.kube/config
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURCVENDQWUyZ0F3SUJBZ0lJUDRlb1NOeUdIa1V3RFFZSktvWklodmNOQVFFTEJRQXdGVEVUTUJFR0ExVUUKQXhNS2EzVmlaWEp1WlhSbGN6QWVGdzB5TXpFd01qQXdOelF6TlROYUZ3MHpNekV3TVRjd056UTROVE5hTUJVeApFekFSQmdOVkJBTVRDbXQxWW1WeWJtVjBaWE13Z2dFaU1BMEdDU3FHU0liM0RRRUJBUVVBQTRJQkR3QXdnZ0VLCkFvSUJBUURIdDdoT1p5MklscnZLdTM0MFpWUTVSMEYxa3RWK215TjJjZnFlMzRpekhYcTY2Z1p6ZTVyRlBsRFcKR3FrTGRKVEF4a3NLZEp3TGFpNmlnQ2orMGZxcllLS3plckpTRTk0ZnkwOE5sVXBIKytUdGdXN1hLZ0xYa3luWAozWFVDeDNlZ2FuTXRPNFQ0VVdVejU1UzRJTElrK3ZmZW5qaGhnZ0FBMnJURGVDZHlKMG1pZEZKVkVqN1I4QjN1CmRoSTNWa0VUNEVtUmpCS2pWakRGcVdIdlFTbFNNRHl1MHNhWlJOSUZzbUpGQ3VBTUhjTWdjQTZCVWpNaEg4a2UKZ3VHSDJVbW41Smszd3p2anA0dHFiMlkyb3ArOVV3NW1ZWkx1VGo0bWlvT1RVV2cwUWNqaFdiZE5pTWZSemtNcwo1dWFwUDdabS93UGpkS1BVbFV6NFQ0UDI2QnFIQWdNQkFBR2pXVEJYTUE0R0ExVWREd0VCL3dRRUF3SUNwREFQCkJnTlZIUk1CQWY4RUJUQURBUUgvTUIwR0ExVWREZ1FXQkJUOVYyVWl2dCtlbmxtU3dnZFBVWENyM2J4R25EQVYKQmdOVkhSRUVEakFNZ2dwcmRXSmxjbTVsZEdWek1BMEdDU3FHU0liM0RRRUJDd1VBQTRJQkFRQWFBUDhBbDNRMApMdXhRbUloR01ubE9aa09UUFVva3NWQTJ1V2hzK0JLbFUwbU9SMWFFZUFRVHV3clByTHR1QTV5MDQxS2grZmtPCjFHNDFNM1pYUk5oVjArNHArYWR5bVI1My9FQjN3enhoSkVHbkNtS2x6Ui9NLzNFN1hIOWtnaU96cUwvMjRZSzYKZTNhSTh3SnNTcS9WbHBsQU1mUDNwZDVxcHVLam5RcnFBVVROc1NhdWNkeFBaSEZBc2sxWUdueFNhTGxXYVlmVQpDdHV1eDRXc0FyMVU0VHphSjc2OEVSbEt2NFQrdkFNN20ydE9UQ2g4T1N1UEVZZ3dTL1N5b01KVnhXT2pHam1ZCjQwUDQ3bnR1VXdQRm5TV1lIbWdzbFMrdGt1UVAwekJBN1duZGxXTEZ4Tkh6cXhKMW1JclBXb21SMDE1RjBuSkoKcnV0amJWenpnSXpCCi0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+    server: https://192.168.1.107:6443
+  name: kubernetes
+contexts:
+- context:
+    cluster: kubernetes
+    user: kubernetes-admin
+  name: kubernetes-admin@kubernetes
+current-context: kubernetes-admin@kubernetes
+kind: Config
+preferences: {}
+users:
+- name: kubernetes-admin
+  user:
+    client-certificate-data: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURJVENDQWdtZ0F3SUJBZ0lJV0l2b1BYcTh3Mnd3RFFZSktvWklodmNOQVFFTEJRQXdGVEVUTUJFR0ExVUUKQXhNS2EzVmlaWEp1WlhSbGN6QWVGdzB5TXpFd01qQXdOelF6TlROYUZ3MHlOREV3TVRrd056UTROVE5hTURReApGekFWQmdOVkJBb1REbk41YzNSbGJUcHRZWE4wWlhKek1Sa3dGd1lEVlFRREV4QnJkV0psY201bGRHVnpMV0ZrCmJXbHVNSUlCSWpBTkJna3Foa2lHOXcwQkFRRUZBQU9DQVE4QU1JSUJDZ0tDQVFFQXVqYy9qZERBOVlpeEwrOFoKSnRQcHFmYXRUNWRSY2ZxTmZabW5hblAzdzdsa1U5ZHdUaHd3OS9BTmI3endCUGZNZnBXc3I2aXNqajNGVnNwRQpiYTlpTXF3dnd6TmxFZTh5ZHhuZ2xnRDdWWlVMc0drMit6QkMvSk9QWFlxd1NZRjcwalQwd01tTEpSRUhaUkV1CkZIcUhLRzYxOUZKWVFyK3NqUW9QbDd4bVZTTlRqUm5QaEkxd0NQdjEvTUdpUG9Lb2piK05Lc1VwYmErRU5YVDkKWis5TWExdGtFZFVwdThWVlBiUlRGazV4cG9JOFZkeUxxUUZ6K3l0bkJOMENuMzJlRUtpYXBlSWgvZTZZdm0rQQpDd081bkRSSUNObk1rSlRibjJ4VUxnME03L01HdUQ5UFIrUzY4VUNRTGVmZXE0TUNkRjFzZUdaaHBvT3Byb1oyCmRPV201UUlEQVFBQm8xWXdWREFPQmdOVkhROEJBZjhFQkFNQ0JhQXdFd1lEVlIwbEJBd3dDZ1lJS3dZQkJRVUgKQXdJd0RBWURWUjBUQVFIL0JBSXdBREFmQmdOVkhTTUVHREFXZ0JUOVYyVWl2dCtlbmxtU3dnZFBVWENyM2J4RwpuREFOQmdrcWhraUc5dzBCQVFzRkFBT0NBUUVBTkhXcWc1M0pnK2x2S3ZjdXhoV0lzcHMzZFdHdXk3cGpEdUE4CnFjZ1VYKzl1OEY3TFlROGxIVGxYRmxoL3JrRlBEd0FzbmZhR0FPVEhpRXZPaTg0ZkI3dldwa2dzcnFwZldMMU0KeDV5Sm5xU0pjNEZnOVNTRExPK1djUkcvVVJzTVhMelpMeGI5cS9zbEsyaEMvanNzNmx0N2NqcWFWWkZvQndyYgptQXBTTjNLV1RmSWFGanBrVDJER0xJT3AwZjRQKzlTa1lmVFRSTjRWdnlHeDFIODZ4V0JDOElXc0ZYUjFGMDEzCk9zNE15K21QOHRGMC96ZXBLMkxJZXFsMVg1YlZESjNIcXBLNWRNanNiZXJ2MEJGRmZ3QmZKQzVLQS9nV0M1YnUKa0U4ZXl6RVB4dmpNdC9KYklPMkNaZnBiV0tMeE0zWnpGVjYwSmR4Yis0eDNvbk9hTkE9PQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==
+    client-key-data: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFcEFJQkFBS0NBUUVBdWpjL2pkREE5WWl4TCs4Wkp0UHBxZmF0VDVkUmNmcU5mWm1uYW5QM3c3bGtVOWR3ClRod3c5L0FOYjd6d0JQZk1mcFdzcjZpc2pqM0ZWc3BFYmE5aU1xd3Z3ek5sRWU4eWR4bmdsZ0Q3VlpVTHNHazIKK3pCQy9KT1BYWXF3U1lGNzBqVDB3TW1MSlJFSFpSRXVGSHFIS0c2MTlGSllRcitzalFvUGw3eG1WU05UalJuUApoSTF3Q1B2MS9NR2lQb0tvamIrTktzVXBiYStFTlhUOVorOU1hMXRrRWRVcHU4VlZQYlJURms1eHBvSThWZHlMCnFRRnoreXRuQk4wQ24zMmVFS2lhcGVJaC9lNll2bStBQ3dPNW5EUklDTm5Na0pUYm4yeFVMZzBNNy9NR3VEOVAKUitTNjhVQ1FMZWZlcTRNQ2RGMXNlR1pocG9PcHJvWjJkT1dtNVFJREFRQUJBb0lCQUhpcGlCTDZxNjN1THZJaQplaWZBdE80Zkcxb3hjT0xzT1hhamMrbjB6eDBTS2tKeG5TSGYvcE1LQjRyWjRLVTNkRmlwMzhYTEJGVC9EYm9aClFwSFlUVWNNYjc2S3RQa1VCNTFKTlUrOXZ4NUxmOUdGdTh5MER4UGZBY3paS3pYV0kwZW9iTmZuUUxSNS9sS3MKK1REbjNHQ0VySDV1UlNhclVNSHJQUU5UWHZQVzNWVXl2azNHMFAybFBVM08rOS9NTXZvaUFISjdoVkdablY4eAo1K3RJaHRmcGVSRkJRWnFBeVhHUFRqekp2ZFFpcWhzNkd2c0VGQ3lXaEh1enpzT2U4dXo5dE9TRVlPWEZxTUovClRyUHlLT2x5bUMveUx2Y1ZzNlhYR2l6OHZyS1pzNk03a1k5ZFlTKzFGOElZSWc4WTcyU3p1L2Yva3JoNlEzVkoKYVZpTFJrRUNnWUVBOVRldVdsMDhvMlJuN0h4RnlZMlZpWkVuVE15dUllcjA1amRUSlNBNFhMc3JKUDgrY1NsZwpvYTNwOWFXWUxWNC9RWHVUMGxVNnZvRWlCcUtSRzhZd2tRLzZ0eGlyaktNT3BKdjZ5Q3ZIb0hqYStMNTBCMHA3Ck9Bb2xEMURSblpkbkhnUkw0OHQ0aGp3ejNlcit6bGFhTjFzZmloczF3M3dyOU5oV1lvRFNRMjBDZ1lFQXdtZG8KYkI2MlluSFVpT1lWZVpJeGVsYWR3Z0ttOEhuQXp2WlB6M0tNby81Y3VzNWh6SWJ5L3JXQzZ3N0puVEJzTFJzTgpLWjNidDNBY0d5MWFqMVVwUm5jYnd5ZG1GQXZCWCtpVlZpSC81TmFscDZ6UWJrYnRsRkowbzJaMzFERXQwU21oCkN5NzZEODZoMm1FQkxTQ3lwTXZ3ZlBzV1Y0bHp0dW5EUFA2bFRsa0NnWUVBd1V0ZStJUStaRjJsUGRqSCtoVE4KSjE5d0p5M0FwYVBiNEEwRVVXT1FpaWhQM2g0RlRwWmJRWmNoc1MwVFE4L2k5TzlBbXEvc1duYllKM3JGLzZxKwpaZHErdXMyTGpKU0wybDNKMVRnTmFBVmNObStLYnFUYmRGVXEyV1BQbC9YY3B1Q2tJYkFtRlVvbmFHcnc2QjJECit0YXRpZVBoQVhORUF3RDFOemhzaGhFQ2dZQmpmTTRvdnRMeHNIVm5GZkNaaGFLQ2pEOHg0VytUazR1RG52UWIKSXZFc24rak94UDJ4ME1JY2JjR3hENkZJSzFiQkFwNEsxVGx6T0JGNkt3eTBXNDNDL1FPZExOV0ZucnA0bmF1SApKK0V3T0ZVUWFWVkZpbERkWGhGSTZoQ2E3QXdaaGFkZjlNdU9PVjRGUnkxMTdjemVuMnZVV2g4RjcxYmpuZUFICm4vM3pDUUtCZ1FEeTBqakZQaWZsbmZKQmRoMjhyNDAyQjBPejhpSDVMNEVTVmZ0VlBUTHNUSXRJQm5FQ0d5SWEKRysxcmhIZForQUJpOFZJN0pURTAweXJHQk9oK2FkdGJhTjRGV200TW1nVlBGZURYVzRZSW9yT29kam4xRmprQgpZbWxobFZPaTc1cVhacHUrMjZEVlpRZlR6RG1ZU0Z3TkVXcWJOSlBtakwxb1pYU0Q2VDZaM0E9PQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo=
+bart@bart-ansible:~/.kube$ cd
+bart@bart-ansible:~$ kubectl apply -f https://docd.projectcalico.org/manifests/calico.yaml
+Unable to connect to the server: dial tcp: lookup docd.projectcalico.org on 127.0.0.53:53: no such host
+bart@bart-ansible:~$ kubectl apply -f https://docs.projectcalico.org/manifests/calico.yaml
+poddisruptionbudget.policy/calico-kube-controllers created
+serviceaccount/calico-kube-controllers created
+serviceaccount/calico-node created
+serviceaccount/calico-cni-plugin created
+configmap/calico-config created
+customresourcedefinition.apiextensions.k8s.io/bgpconfigurations.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/bgpfilters.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/bgppeers.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/blockaffinities.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/caliconodestatuses.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/clusterinformations.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/felixconfigurations.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/globalnetworkpolicies.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/globalnetworksets.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/hostendpoints.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/ipamblocks.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/ipamconfigs.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/ipamhandles.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/ippools.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/ipreservations.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/kubecontrollersconfigurations.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/networkpolicies.crd.projectcalico.org created
+customresourcedefinition.apiextensions.k8s.io/networksets.crd.projectcalico.org created
+clusterrole.rbac.authorization.k8s.io/calico-kube-controllers created
+clusterrole.rbac.authorization.k8s.io/calico-node created
+clusterrole.rbac.authorization.k8s.io/calico-cni-plugin created
+clusterrolebinding.rbac.authorization.k8s.io/calico-kube-controllers created
+clusterrolebinding.rbac.authorization.k8s.io/calico-node created
+clusterrolebinding.rbac.authorization.k8s.io/calico-cni-plugin created
+daemonset.apps/calico-node created
+deployment.apps/calico-kube-controllers created
+bart@bart-ansible:~$ ssh bart@192.168.1.108
+Welcome to Ubuntu 22.04 LTS (GNU/Linux 5.15.0-27-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+565 updates can be applied immediately.
+336 of these updates are standard security updates.
+To see these additional updates run: apt list --upgradable
+
+Last login: Fri Oct 20 09:47:10 2023 from 192.168.1.100
+bart@bart-host2:~$ exit
+logout
+Connection to 192.168.1.108 closed.
+bart@bart-ansible:~$ ssh bart@192.168.1.108
+Welcome to Ubuntu 22.04 LTS (GNU/Linux 5.15.0-27-generic x86_64)
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+565 updates can be applied immediately.
+336 of these updates are standard security updates.
+To see these additional updates run: apt list --upgradable
+
+Last login: Fri Oct 20 10:25:58 2023 from 192.168.1.100
+bart@bart-host2:~$ kubeadm join 192.168.1.107:6443 --token bz0amv.mitkn9j2py42g8wd --discovery-token-ca-cert-hash sha256:290d68000604e0173e8b9e1c2533175041d3b9427a69723d1761dd3e3ee91977
+[preflight] Running pre-flight checks
+error execution phase preflight: [preflight] Some fatal errors occurred:
+	[ERROR IsPrivilegedUser]: user is not running as root
+[preflight] If you know what you are doing, you can make a check non-fatal with `--ignore-preflight-errors=...`
+To see the stack trace of this error execute with --v=5 or higher
+bart@bart-host2:~$ sudo kubeadm join 192.168.1.107:6443 --token bz0amv.mitkn9j2py42g8wd --discovery-token-ca-cert-hash sha256:290d68000604e0173e8b9e1c2533175041d3b9427a69723d1761dd3e3ee91977
+[sudo] password for bart: 
+[preflight] Running pre-flight checks
+[preflight] Reading configuration from the cluster...
+[preflight] FYI: You can look at this config file with 'kubectl -n kube-system get cm kubeadm-config -o yaml'
+[kubelet-start] Writing kubelet configuration to file "/var/lib/kubelet/config.yaml"
+[kubelet-start] Writing kubelet environment file with flags to file "/var/lib/kubelet/kubeadm-flags.env"
+[kubelet-start] Starting the kubelet
+[kubelet-start] Waiting for the kubelet to perform the TLS Bootstrap...
+
+This node has joined the cluster:
+* Certificate signing request was sent to apiserver and a response was received.
+* The Kubelet was informed of the new secure connection details.
+
+Run 'kubectl get nodes' on the control-plane to see this node join the cluster.
+
+bart@bart-host2:~$ exit
+logout
+Connection to 192.168.1.108 closed.
+bart@bart-ansible:~$ kubectl get nodes
+NAME         STATUS   ROLES           AGE   VERSION
+bart-host1   Ready    control-plane   41m   v1.28.2
+bart-host2   Ready    <none>          89s   v1.28.2
+bart@bart-ansible:~$ kubectl get pods
+No resources found in default namespace.
+bart@bart-ansible:~$ kubectl get pods --namespace=kube-system
+NAME                                       READY   STATUS    RESTARTS   AGE
+calico-kube-controllers-7ddc4f45bc-r986v   1/1     Running   0          6m30s
+calico-node-22v9d                          1/1     Running   0          6m30s
+calico-node-kdfzv                          1/1     Running   0          2m12s
+coredns-5dd5756b68-2zzp4                   1/1     Running   0          42m
+coredns-5dd5756b68-8qvl2                   1/1     Running   0          42m
+etcd-bart-host1                            1/1     Running   0          42m
+kube-apiserver-bart-host1                  1/1     Running   0          42m
+kube-controller-manager-bart-host1         1/1     Running   0          42m
+kube-proxy-95f6n                           1/1     Running   0          2m12s
+kube-proxy-m8k97                           1/1     Running   0          42m
+kube-scheduler-bart-host1                  1/1     Running   0          42m
+bart@bart-ansible:~$ 
+
