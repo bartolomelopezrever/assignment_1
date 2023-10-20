@@ -26,7 +26,7 @@ Los nodos gestionados en Kubernetes son máquinas donde se ejecutan contenedores
 
 ### **Parte 2: Ejercicio Práctico**
 
-En este repositorio de github podrás encontrar la documentación y el historial de la terminal:
+En este repositorio de github podrás encontrar la documentación y el historial de la terminal: https://github.com/bartolomelopezrever/assignment_1
 
 ---
 
@@ -75,7 +75,7 @@ La alta disponibilidad es crucial para garantizar que las aplicaciones y servici
 
 ### **Parte 4: Evaluación de la Configuración**
 
-En este repositorio de github podrás encontrar la documentación, los archivos .yaml y el historial de la terminal:
+En este repositorio de github podrás encontrar la documentación, los archivos .yaml y el historial de la terminal: https://github.com/bartolomelopezrever/assignment_1
 
 ---
 
